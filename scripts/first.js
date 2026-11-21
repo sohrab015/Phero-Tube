@@ -264,6 +264,8 @@ async function searchShows() {
 
         displayShows(searchResults);
 
+
+
     } catch (error) {
 
         console.error(error);
