@@ -134,38 +134,45 @@ function setActiveButton(activeButton) {
 }
 
 
+//function for official website
+
+function openOfficialWebsite(show) {
+
+    const officialUrl = show.officialSite;
+
+    if (officialUrl) {
+        window.open(officialUrl, "_blank");
+    }
+    else {
+        alert("Official website is not available!");
+    }
+
+}
+
+
 // 5. Display Shows
+
 function displayShows(shows) {
 
     videoContainer.innerHTML = "";
-
-    if (shows.length === 0) {
-
-        videoContainer.innerHTML = `
-            <p class="col-span-full text-center">
-                No Shows Found!
-            </p>
-        `;
-
-        return;
-    }
-
 
     shows.forEach(show => {
 
         const card = document.createElement("div");
 
-        card.className =
-            "bg-white rounded-lg shadow-md overflow-hidden";
-
+        card.classList.add(
+            "bg-white",
+            "rounded-lg",
+            "shadow-md",
+            "overflow-hidden",
+            "cursor-pointer"
+        );
 
         card.innerHTML = `
-
             <img
                 class="w-full h-[250px] object-cover"
-                src="${show.image?.medium || "https://placehold.co/300x400?text=No+Image"}"
+                src="${show.image?.medium || "https://placehold.co/300x400"}"
                 alt="${show.name}"
-                loading="lazy"
             >
 
             <div class="p-3">
@@ -183,14 +190,19 @@ function displayShows(shows) {
                 </p>
 
             </div>
-
         `;
+
+        // Click Event
+        card.addEventListener("click", function () {
+            openOfficialWebsite(show);
+        });
 
         videoContainer.appendChild(card);
 
     });
 
 }
+
 
 
 // 6. Run Application
