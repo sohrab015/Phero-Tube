@@ -219,6 +219,67 @@ function displayShows(shows) {
 
 }
 
+//search function
+
+async function searchShows() {
+
+    const searchInput = document.getElementById("search-input");
+
+    const searchText = searchInput.value.trim();
+
+    if (searchText === "") {
+        alert("Please enter a show name!");
+        return;
+    }
+
+    try {
+
+        videoContainer.innerHTML = `
+            <p class="col-span-full text-center">
+                Searching...
+            </p>
+        `;
+
+        const response = await fetch(
+            `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(searchText)}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Search failed");
+        }
+
+        const data = await response.json();
+
+        // Extract show objects
+        const searchResults = data.map(item => item.show);
+
+        if (searchResults.length === 0) {
+            videoContainer.innerHTML = `
+                <p class="col-span-full text-center">
+                    No Shows Found!
+                </p>
+            `;
+            return;
+        }
+
+        displayShows(searchResults);
+
+    } catch (error) {
+
+        console.error(error);
+
+        videoContainer.innerHTML = `
+            <p class="col-span-full text-center text-red-500">
+                Search Failed!
+            </p>
+        `;
+    }
+}
+
+const searchBtn = document.getElementById("search-btn");
+
+searchBtn.addEventListener("click", searchShows);
+
 
 
 // 6. Run Application
