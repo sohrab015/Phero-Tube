@@ -165,7 +165,8 @@ function displayShows(shows) {
             "rounded-lg",
             "shadow-md",
             "overflow-hidden",
-            "cursor-pointer"
+            "cursor-pointer",
+            "sm:max-w-[250px]"
         );
 
         card.innerHTML = `
@@ -189,11 +190,26 @@ function displayShows(shows) {
                     ⭐ ${show.rating?.average ?? "N/A"}
                 </p>
 
+                <label for="modal-${show.id}" class="btn mt-3 btn-block">Show Details</label>
+                <input type="checkbox" id="modal-${show.id}" class="modal-toggle" />
+                <div class="modal" role="dialog">
+                    <div class="modal-box">
+                        <h3 class="text-lg font-bold">${show.name}!</h3>
+                        <div class="py-4">${show.summary || "No Summary Available"}</div>
+                    </div>
+                    <label class="modal-backdrop" for="modal-${show.id}">Close</label>
+                </div>
+                
+                <button class="btn mt-3 btn-block show-details-btn">Official Web</button>
+
             </div>
         `;
 
         // Click Event
-        card.addEventListener("click", function () {
+
+        const officialBtn = card.querySelector(".show-details-btn");
+
+        officialBtn.addEventListener("click", function () {
             openOfficialWebsite(show);
         });
 
