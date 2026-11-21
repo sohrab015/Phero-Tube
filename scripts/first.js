@@ -1,148 +1,197 @@
-function loadCategories() {
+"use strict";
 
-    // featch the data
+// DOM Elements
+const categoryContainer = document.getElementById("catagory-container");
+const videoContainer = document.getElementById("video-container");
 
-    fetch("https://api.tvmaze.com/shows?page=0&utm_source=chatgpt.com")
-        .then((res) => res.json())
-        .then((data) => {
-            displayCatagory(data)
-        })
-}
+// API URL
+const API_URL = "https://api.tvmaze.com/shows";
 
-function displayCatagory(apiArray) {
+// Store all shows
+let allShows = [];
 
-    //get the container
 
-    const categoryContainer = document.getElementById("catagory-container");
+// 1. Fetch API Data
+async function fetchShows() {
+    try {
 
-    //loop oparetion on array of object
+        videoContainer.innerHTML = `
+            <p class="col-span-full text-center text-lg">
+                Loading Shows...
+            </p>
+        `;
 
-    for (let i of apiArray) {
+        const response = await fetch(API_URL);
 
-        //create element
+        if (!response.ok) {
+            throw new Error("Failed to fetch API data");
+        }
 
-        const categoryDiv = document.createElement("button");
+        allShows = await response.json();
 
-        categoryDiv.innerHTML = `
-        <button class="btn btn-sm hover:bg-[#FF1F3D] hover:text-white hover:border-none hover:font-bold hover:transform-gpu">
-        <a href="#${i.id}">${i.id} - ${i.name}</a>
-        </button>
-        `
-        categoryContainer.appendChild(categoryDiv);
+        // Display Categories
+        displayCategories();
+
+        // Display All Shows
+        displayShows(allShows);
+
+    } catch (error) {
+
+        console.error("Error:", error);
+
+        videoContainer.innerHTML = `
+            <p class="col-span-full text-center text-red-500">
+                Failed to load shows. Please try again.
+            </p>
+        `;
     }
-
 }
 
 
+// 2. Get Unique Categories
+function getCategories() {
+
+    const categories = [
+        ...new Set(
+            allShows.flatMap(show => show.genres || [])
+        )
+    ];
+
+    return categories;
+}
 
 
+// 3. Display Category Buttons
+function displayCategories() {
 
+    const categories = getCategories();
 
+    categoryContainer.innerHTML = "";
 
+    // All Button
+    const allButton = document.createElement("button");
 
+    allButton.innerText = "All";
 
+    allButton.className =
+        "btn btn-sm border-none bg-[#FF1F3D] text-white";
 
+    allButton.addEventListener("click", () => {
 
+        setActiveButton(allButton);
 
-
-
-
-
-//========================== featching the videos=============
-
-function loadVideos() {
-    fetch("https://api.tvmaze.com/shows?page=0&utm_source=chatgpt.com")
-        .then((res) => res.json())
-        .then((data) => {
-            displayVideos(data);
-        })
-
-};
-
-
-const displayVideos = (videos) => {
-
-    const videoContainer = document.getElementById("video-container");
-
-    videoContainer.innerHTML = "";
-
-    videos.forEach((video) => {
-
-        const videoCard = document.createElement("div");
-
-        // Handle missing image
-        const imageUrl = video.image?.original ||
-            video.image?.medium ||
-            "https://placehold.co/600x400?text=No+Image";
-
-        // Handle missing website
-        const website = video.network?.officialSite ||
-            video.webChannel?.officialSite ||
-            video.url ||
-            "#";
-
-        // Handle missing summary
-        const summary = video.summary || "No description available.";
-
-        //get the id
-        const id = video.id;
-
-        videoCard.innerHTML = `
-
-        <div id="${id}" class="card bg-base-100 shadow-sm h-full">
-
-            <figure>
-                <img
-                    src="${imageUrl}"
-                    alt="${video.name}"
-                    class="w-full h-52 object-cover"
-                />
-            </figure>
-
-            <div class="card-body">
-
-                <h2 class="card-title">
-                    ${video.name}
-                </h2>
-
-                <p class="line-clamp-3">
-                    ${summary}
-                </p>
-
-                <div class="card-actions justify-end mt-auto">
-
-                    <a href="${website}" target="_blank" class="btn btn-primary">Official Website</a>
-
-                </div>
-
-            </div>
-
-        </div>
-    `;
-
-        videoContainer.appendChild(videoCard);
+        displayShows(allShows);
 
     });
 
-    console.log("Total videos:", videos.length);
-};
+    categoryContainer.appendChild(allButton);
 
 
+    // Other Category Buttons
+    categories.forEach(category => {
+
+        const button = document.createElement("button");
+
+        button.innerText = category;
+
+        button.className =
+            "btn btn-sm border-none bg-gray-200 text-black";
+
+        button.addEventListener("click", () => {
+
+            setActiveButton(button);
+
+            const filteredShows = allShows.filter(show =>
+                show.genres?.includes(category)
+            );
+
+            displayShows(filteredShows);
+
+        });
+
+        categoryContainer.appendChild(button);
+
+    });
+
+}
 
 
+// 4. Active Button Style
+function setActiveButton(activeButton) {
+
+    const buttons = categoryContainer.querySelectorAll("button");
+
+    buttons.forEach(button => {
+
+        button.className =
+            "btn btn-sm border-none bg-gray-200 text-black";
+
+    });
+
+    activeButton.className =
+        "btn btn-sm border-none bg-[#FF1F3D] text-white";
+
+}
 
 
+// 5. Display Shows
+function displayShows(shows) {
+
+    videoContainer.innerHTML = "";
+
+    if (shows.length === 0) {
+
+        videoContainer.innerHTML = `
+            <p class="col-span-full text-center">
+                No Shows Found!
+            </p>
+        `;
+
+        return;
+    }
 
 
+    shows.forEach(show => {
+
+        const card = document.createElement("div");
+
+        card.className =
+            "bg-white rounded-lg shadow-md overflow-hidden";
 
 
+        card.innerHTML = `
+
+            <img
+                class="w-full h-[250px] object-cover"
+                src="${show.image?.medium || "https://placehold.co/300x400?text=No+Image"}"
+                alt="${show.name}"
+                loading="lazy"
+            >
+
+            <div class="p-3">
+
+                <h2 class="font-bold text-lg mb-2">
+                    ${show.name}
+                </h2>
+
+                <p class="text-sm text-gray-500 mb-2">
+                    ${show.genres?.join(", ") || "No Genre"}
+                </p>
+
+                <p class="text-sm font-semibold text-yellow-600">
+                    ⭐ ${show.rating?.average ?? "N/A"}
+                </p>
+
+            </div>
+
+        `;
+
+        videoContainer.appendChild(card);
+
+    });
+
+}
 
 
-
-
-
-
-
-
-loadCategories();
-loadVideos();
+// 6. Run Application
+fetchShows();
